@@ -5,6 +5,9 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
+#Used for generic views
+from django.views import generic
+
 #Mejor usar render y templates. Debiera sacar HttpResponse
 from django.shortcuts import HttpResponse 
 
@@ -12,11 +15,24 @@ from django.shortcuts import HttpResponse
 from .models import Question
 from .models import Choice
 
-def index(request):
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    context = {'latest_question_list': latest_question_list}
-    return render(request, 'polls/index.html', context)
+#Traditional view 
+#def index(request):
+#    latest_question_list = Question.objects.order_by('-pub_date')[:5]
+#    context = {'latest_question_list': latest_question_list}
+#    return render(request, 'polls/index.html', context)
 
+#Generic view inheritance
+class IndexView(generic.ListView):
+    template_name = 'polls/index.html'
+    context_object_name = 'latest_question_list'
+
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Question.objects.order_by('-pub_date')[:5]
+
+
+
+#Send a 404 by yourself
 #(Uses: from django.http import Http404)
 #def detail(request, question_id):
 #    try:
@@ -25,14 +41,27 @@ def index(request):
 #        raise Http404("Question does not exist")
 #    return render(request, 'polls/detail.html', {'question': question})
 
-def detail(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/detail.html', {'question': question})
+#Traditional view with shortcut404
+#def detail(request, question_id):
+#    question = get_object_or_404(Question, pk=question_id)
+#    return render(request, 'polls/detail.html', {'question': question})
+
+#Generic view inheritance
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = 'polls/detail.html'
 
 
-def results(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/results.html', {'question': question})
+
+#Traditional view
+#def results(request, question_id):
+#    question = get_object_or_404(Question, pk=question_id)
+#    return render(request, 'polls/results.html', {'question': question})
+
+#Generic view inheritance
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = 'polls/results.html'
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
